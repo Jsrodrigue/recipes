@@ -3,11 +3,13 @@ from instance.config import Config
 from extensions import db
 from flask_login import LoginManager, current_user # Login session management and current_user object to manage current user
 from models import User
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # Import blueprints 
 from auth import auth 
