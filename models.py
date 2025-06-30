@@ -35,6 +35,7 @@ class Recipe(db.Model):
     instructions = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default= datetime.now(timezone.utc))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    photo_filename = db.Column(db.String(100), nullable=True)
     
     # Defines many-to-many relationship between Recipe and Tag via the recipe_tags association table.
     # Allows accessing tags of a recipe and recipes of a tag (via backref).

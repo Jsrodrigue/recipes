@@ -14,10 +14,12 @@ migrate = Migrate(app, db)
 # Import blueprints 
 from auth import auth 
 from main import main
+from recipes import recipes
 
 # Register blueprints 
 app.register_blueprint(auth, url_prefix='/auth')
-app.register_blueprint(main, url_prefix='/main')
+app.register_blueprint(main, url_prefix='/')
+app.register_blueprint(recipes, url_prefix='/recipes')
 
 # object to manage authentication
 login_manager = LoginManager(app)
