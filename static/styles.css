@@ -1,0 +1,9 @@
+/*Style to make side menu appear in desktope*/
+@media (min-width: 768px) {
+  #offcanvasMenu {
+    position: static !important;
+    transform: none !important;
+    visibility: visible !important;
+    border-right: 1px solid #ddd;
+  }
+}

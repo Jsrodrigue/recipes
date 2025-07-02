@@ -1,0 +1,68 @@
+<div class="card mx-5" style="max-width: 900px; width: 100%">
+  <div class="card-header text-center"><h4>New Recipe</h4></div>
+  <div class="card-body">
+    <form
+      method="POST"
+      action="{{url_for('recipes.new')}}"
+      enctype="multipart/form-data"
+    >
+      {{ form.hidden_tag() }}
+
+      <!-- Title -->
+      <div class="mb-3">
+        <label for="title" class="form-label">Title:</label>
+        {{ form.title(class="form-control", id="title") }} {% for error in
+        form.title.errors %}
+        <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label for="description" class="form-label">Description:</label>
+        {{ form.description(class="form-control", rows="3", id="description") }}
+      </div>
+
+      <!-- Instructions -->
+      <div class="mb-3">
+        <label for="instructions" class="form-label">Instructions:</label>
+        {{ form.instructions(class="form-control", rows="5", id="instructions")
+        }}
+      </div>
+
+      <!-- Ingredients -->
+      <div class="mb-3">
+        <label class="form-label">Ingredients:</label>
+        <div id="ingredients-list" class="mb-2">
+          <!-- Here we add ingredients dynamically with JS -->
+
+          <!-- Hidden field to add the JSON ingredients list-->
+          {{ form.ingredients(id="ingredients", type="hidden") }}
+        </div>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm mb-2"
+          onclick="addIngredient()"
+        >
+          Add Ingredient
+        </button>
+        {{ form.ingredients(id="ingredients", type="hidden") }}
+      </div>
+
+      <!-- Tags -->
+      <div class="mb-3">
+        <label for="tags" class="form-label">Tags:</label>
+        {{ form.tags(class="form-select", multiple=True, id="tags") }}
+      </div>
+
+      <!-- Photo -->
+      <div class="mb-3">
+        <label for="photo" class="form-label">Photo:</label>
+        {{ form.photo(class="form-control", id="photo") }}
+      </div>
+
+      <!-- Submit -->
+      <div class="d-grid">{{ form.submit(class="btn btn-primary px-2") }}</div>
+    </form>
+  </div>
+</div>
