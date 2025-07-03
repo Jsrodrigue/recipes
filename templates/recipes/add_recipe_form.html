@@ -2,11 +2,15 @@
   <div class="card-header text-center"><h4>New Recipe</h4></div>
   <div class="card-body">
     <form
+      id="recipeForm"
       method="POST"
-      action="{{url_for('recipes.new')}}"
+      action="{{ url_for('recipes.new') }}"
       enctype="multipart/form-data"
     >
-      {{ form.hidden_tag() }}
+      {{ form.hidden_tag() }} {% if form.errors %} {% for field, errors in
+      form.errors.items() %} {% for error in errors %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endfor %} {% endfor %} {% endif %}
 
       <!-- Title -->
       <div class="mb-3">
@@ -21,13 +25,18 @@
       <div class="mb-3">
         <label for="description" class="form-label">Description:</label>
         {{ form.description(class="form-control", rows="3", id="description") }}
+        {% for error in form.description.errors %}
+        <div class="text-danger">{{ error }}</div>
+        {% endfor %}
       </div>
 
       <!-- Instructions -->
       <div class="mb-3">
         <label for="instructions" class="form-label">Instructions:</label>
         {{ form.instructions(class="form-control", rows="5", id="instructions")
-        }}
+        }} {% for error in form.instructions.errors %}
+        <div class="text-danger">{{ error }}</div>
+        {% endfor %}
       </div>
 
       <!-- Ingredients -->
@@ -39,26 +48,25 @@
           <!-- Hidden field to add the JSON ingredients list-->
           {{ form.ingredients(id="ingredients", type="hidden") }}
         </div>
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm mb-2"
-          onclick="addIngredient()"
-        >
-          Add Ingredient
-        </button>
-        {{ form.ingredients(id="ingredients", type="hidden") }}
+        <!-- Add your JS button here if needed -->
       </div>
 
       <!-- Tags -->
       <div class="mb-3">
         <label for="tags" class="form-label">Tags:</label>
-        {{ form.tags(class="form-select", multiple=True, id="tags") }}
+        {{ form.tags(class="form-select", multiple=True, id="tags") }} {% for
+        error in form.tags.errors %}
+        <div class="text-danger">{{ error }}</div>
+        {% endfor %}
       </div>
 
       <!-- Photo -->
       <div class="mb-3">
         <label for="photo" class="form-label">Photo:</label>
-        {{ form.photo(class="form-control", id="photo") }}
+        {{ form.photo(class="form-control", id="photo") }} {% for error in
+        form.photo.errors %}
+        <div class="text-danger">{{ error }}</div>
+        {% endfor %}
       </div>
 
       <!-- Submit -->

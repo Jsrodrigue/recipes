@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-4">
+    <div class="card mx-5" style="max-width: 900px; width: 100%;">
+      <div class="card-header text-center"><h4>New Recipe</h4></div>
+      <div class="card-body">
+        <form id="recipeForm" method="POST" action="{{ url_for('recipes.new') }}" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+
+          <!-- Title -->
+          <div class="mb-3">
+            <label for="title" class="form-label">Title:</label>
+            {{ form.title(class="form-control", id="title") }}
+            <!-- El JS inyectará aquí los errores -->
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            {{ form.description(class="form-control", rows="3", id="description") }}
+            {% for error in form.description.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Instructions -->
+          <div class="mb-3">
+            <label for="instructions" class="form-label">Instructions:</label>
+            {{ form.instructions(class="form-control", rows="5", id="instructions") }}
+            {% for error in form.instructions.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Ingredients -->
+          <div class="mb-3">
+            <label class="form-label">Ingredients:</label>
+            <div id="ingredients-list" class="mb-2">
+              {{ form.ingredients(id="ingredients", type="hidden") }}
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="mb-3">
+            <label for="tags" class="form-label">Tags:</label>
+            {{ form.tags(class="form-select", multiple=True, id="tags") }}
+            {% for error in form.tags.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Photo -->
+          <div class="mb-3">
+            <label for="photo" class="form-label">Photo:</label>
+            {{ form.photo(class="form-control", id="photo") }}
+            {% for error in form.photo.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Submit -->
+          <div class="d-grid">
+            {{ form.submit(class="btn btn-primary px-2") }}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).on('submit', '#recipeForm', function(e) {
+      e.preventDefault();
+      var form = this;
+      var formData = new FormData(form);
+
+      // Limpia errores previos
+      $(form).find('.text-danger').remove();
+
+      $.ajax({
+        url: $(form).attr('action'),
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        success: function(response) {
+          if (response.success) {
+            // Puedes redirigir, cerrar modal, o mostrar mensaje de éxito
+            window.location.href = "/"; // O a donde quieras
+          } else if (response.errors) {
+            // Muestra los errores debajo de cada campo
+            for (const [field, errors] of Object.entries(response.errors)) {
+              const fieldElem = $(form).find('[name="' + field + '"]');
+              errors.forEach(error => {
+                fieldElem.after('<div class="text-danger">' + error + '</div>');
+              });
+            }
+          }
+        }
+      });
+    });
+  </script>
+{% endblock %}
