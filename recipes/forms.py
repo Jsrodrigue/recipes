@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired
 from flask_wtf.file import FileAllowed, FileRequired
 from werkzeug.utils import secure_filename
 import os
+from flask import flash, current_app #Proxy to use the current app
 from models import Recipe, Tag
 from extensions import db
 
@@ -20,13 +21,15 @@ class NewRecipeForm(FlaskForm):
     ])
     submit = SubmitField('Save')
 
+# Function to save a recipe from the form
 def save_recipe(form):
     if form.validate_on_submit():
         photo = form.photo.data
         filename = None
         if photo:
+            # Add unique name to filename
             filename = secure_filename(photo.filename)
-            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
         
         # Save the recipe to the database
         recipe = Recipe(
@@ -36,9 +39,12 @@ def save_recipe(form):
             ingredients=form.ingredients.data,  # If you store as JSON string
             photo_filename=filename
         )
-        # Add tags if your model supports a many-to-many relationship
+        # Add tags
         recipe.tags = Tag.query.filter(Tag.id.in_(form.tags.data)).all()
+        try: 
+            db.session.add(recipe)
+            db.session.commit()
+            flash("Recipe successfully added", 'success')
+        except:
+            flash("Error saving recipe", 'danger')
         
-        db.session.add(recipe)
-        db.session.commit()
-        return recipe

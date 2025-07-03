@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>{% block title %}cosyna{% endblock %}</title>
+    <title>{% block title %}cozyna{% endblock %}</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -15,28 +15,39 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='styles.css') }}"
     />
-    <!-- Select2 CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
   <body>
+
+    <!--Use copilot to make the page more responsive by adding hamburguer btn for smaller screens-->
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container">
-        <a class="navbar-brand" href="{{url_for('main.index')}}">COSYna</a>
-
-        <div class="collapse navbar-collapse">
+        <a class="navbar-brand" href="{{url_for('main.index')}}">COZYna</a>
+        <!-- Botón hamburguesa para móviles -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainNavbar"
+          aria-controls="mainNavbar"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- upper navbar-->
+        <div class="collapse navbar-collapse" id="mainNavbar">
           <ul class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{url_for('recipes.index')}}"
-                >Recipes</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('recipes.new') }}">New Recipe</a>
-            </li>
+            
             <li class="nav-item">
               <a class="nav-link" href="#">{{user.username}}</a>
             </li>
@@ -79,13 +90,64 @@
     </div>
     {% endif %} {% endwith %}
 
-    <div class="container">
-      {% block content %}
-      <!-- Page-specific content goes here -->
-      {% endblock %}
+    <div class="d-flex">
+      <!-- Sidebar aquí -->
+      <div>
+        <!-- Sidebar -->
+        <nav
+          id="sidebarMenu"
+          class="d-lg-block bg-light sidebar collapse"
+          style="min-width: 200px"
+        >
+          <div class="position-sticky">
+            <div class="list-group list-group-flush mt-4">
+              <a
+                href="{{ url_for('recipes.new') }}"
+                class="list-group-item list-group-item-action py-2"
+              >
+                <i class="bi bi-plus-circle"></i> New Recipe
+              </a>
+              <a
+                href="{{ url_for('recipes.index') }}"
+                class="list-group-item list-group-item-action py-2"
+              >
+                <i class="bi bi-journal-text"></i> My Recipes
+              </a>
+              <a
+                href="{{ url_for('main.index') }}"
+                class="list-group-item list-group-item-action py-2"
+              >
+                <i class="bi bi-compass"></i> Discover
+              </a>
+              <a
+                href="#"
+                class="list-group-item list-group-item-action py-2"
+              >
+                <i class="bi bi-calendar-week"></i> Meal Planner
+              </a>
+            </div>
+          </div>
+        </nav>
+        <!-- Sidebar toggle button for mobile -->
+        <button
+          class="btn btn-primary d-lg-none m-2"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#sidebarMenu"
+          aria-controls="sidebarMenu"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span> Menu
+        </button>
+      </div>
+      <!-- Contenido principal -->
+      <div class="container-fluid flex-grow-1">
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+      </div>
     </div>
-    <!-- jQuery (necesario para Select2) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

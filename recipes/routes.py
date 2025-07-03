@@ -13,20 +13,18 @@ recipes = Blueprint('recipes', __name__)
 def index():
     return redirect(url_for('recipes.new'))
 
+# Route to create a nwe recipe
 @recipes.route('/new', methods=["GET", "POST"])
 @login_required
 def new():
+    
     form = NewRecipeForm()
+
+    # Get the tags in the db by alphabetical order and add to the form
     all_tags = Tag.query.order_by(Tag.name).all()
     form.tags.choices = [(tag.id, tag.name) for tag in all_tags]
 
     if form.validate_on_submit():
-        recipe = save_recipe(form)
-        return jsonify({'success': True})
-
-    # Si es AJAX y hay errores, devuelve los errores por campo
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({'success': False, 'errors': form.errors})
-
-    # Si no es AJAX, renderiza la página normal
+        save_recipe(form)
+        return redirect("recipes.new")
     return render_template("recipes/add_recipe_page.html", form=form, user=current_user)

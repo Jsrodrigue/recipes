@@ -1,104 +1,215 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  <div class="card mx-5" style="max-width: 900px; width: 100%">
+    <div class="card-header text-center"><h4>New Recipe</h4></div>
+    <div class="card-body">
+      <form
+        id="recipeForm"
+        method="POST"
+        action="{{ url_for('recipes.new') }}"
+        enctype="multipart/form-data"
+      >
+        {{ form.hidden_tag() }}
 
-{% block content %}
-  <div class="container mt-4">
-    <div class="card mx-5" style="max-width: 900px; width: 100%;">
-      <div class="card-header text-center"><h4>New Recipe</h4></div>
-      <div class="card-body">
-        <form id="recipeForm" method="POST" action="{{ url_for('recipes.new') }}" enctype="multipart/form-data">
-          {{ form.hidden_tag() }}
+        <!-- Title -->
+        <div class="mb-3">
+          <label for="title" class="form-label">Title:</label>
+          {{ form.title(class="form-control", id="title") }} {% for error in
+          form.title.errors %}
+          <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-          <!-- Title -->
-          <div class="mb-3">
-            <label for="title" class="form-label">Title:</label>
-            {{ form.title(class="form-control", id="title") }}
-            <!-- El JS inyectará aquí los errores -->
+        <!-- Description -->
+        <div class="mb-3">
+          <label for="description" class="form-label">Description:</label>
+          {{ form.description(class="form-control", rows="3", id="description")
+          }} {% for error in form.description.errors %}
+          <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Instructions -->
+        <div class="mb-3">
+          <label for="instructions" class="form-label">Instructions:</label>
+          {{ form.instructions(class="form-control", rows="5",
+          id="instructions") }} {% for error in form.instructions.errors %}
+          <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Ingredients -->
+        <div class="mb-3">
+          <button id="ingredient-btn" class="btn btn-primary">
+            Add Ingredient
+          </button>
+          <div id="ingredients-list" class="mb-2">
+            <!-- Here we add ingredients dynamically with JS -->
+            <!-- Hidden field to add the JSON ingredients list-->
+            {{ form.ingredients(id="ingredients", type="hidden") }}
           </div>
 
-          <!-- Description -->
-          <div class="mb-3">
-            <label for="description" class="form-label">Description:</label>
-            {{ form.description(class="form-control", rows="3", id="description") }}
-            {% for error in form.description.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
+          <!-- Hidden Fields to Add Ingrediente -->
+          <div id="ingredient-adder" class="row mb-2 g-2 d-none">
+            <!--Ingredient field-->
+            <div class="col-4">
+              <input
+                id="ingredient-field"
+                class="form-control"
+                placeholder="Ingredient"
+              />
+            </div>
 
-          <!-- Instructions -->
-          <div class="mb-3">
-            <label for="instructions" class="form-label">Instructions:</label>
-            {{ form.instructions(class="form-control", rows="5", id="instructions") }}
-            {% for error in form.instructions.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
+            <!-- quantity field-->
+            <div class="col-3">
+              <input
+                id="quantity-field"
+                class="form-control"
+                placeholder="Quantity"
+              />
+            </div>
 
-          <!-- Ingredients -->
-          <div class="mb-3">
-            <label class="form-label">Ingredients:</label>
-            <div id="ingredients-list" class="mb-2">
-              {{ form.ingredients(id="ingredients", type="hidden") }}
+            <!-- Add btn -->
+            <div class="col-1">
+              <button
+                id="add-ingredient-btn"
+                class="btn btn-secondary w-100"
+                type="button"
+              >
+                Add
+              </button>
+            </div>
+
+            <!-- cancel btn -->
+            <div class="col-2">
+              <button
+                id="cancel-ingredient-btn"
+                class="btn btn-secondary w-a"
+                type="button"
+              >
+                Cancel
+              </button>
             </div>
           </div>
+        </div>
 
-          <!-- Tags -->
-          <div class="mb-3">
-            <label for="tags" class="form-label">Tags:</label>
-            {{ form.tags(class="form-select", multiple=True, id="tags") }}
-            {% for error in form.tags.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
+        <!-- Tags -->
+        <div class="mb-3">
+          <label for="tags" class="form-label">Tags:</label>
+          {{ form.tags(class="form-select", multiple=True, id="tags") }} {% for
+          error in form.tags.errors %}
+          <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-          <!-- Photo -->
-          <div class="mb-3">
-            <label for="photo" class="form-label">Photo:</label>
-            {{ form.photo(class="form-control", id="photo") }}
-            {% for error in form.photo.errors %}
-              <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-          </div>
+        <!-- Photo -->
+        <div class="mb-3">
+          <label for="photo" class="form-label">Photo:</label>
+          {{ form.photo(class="form-control", id="photo") }} {% for error in
+          form.photo.errors %}
+          <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-          <!-- Submit -->
-          <div class="d-grid">
-            {{ form.submit(class="btn btn-primary px-2") }}
-          </div>
-        </form>
-      </div>
+        <!-- Submit -->
+        <div class="d-grid content-center">
+          {{ form.submit(class="btn btn-primary px-2 w-25") }}
+        </div>
+      </form>
     </div>
   </div>
+</div>
 
-  <script>
-    $(document).on('submit', '#recipeForm', function(e) {
-      e.preventDefault();
-      var form = this;
-      var formData = new FormData(form);
+<script>
+  //--------------------------------------------------------------
+  //------------- Add ingredients to hidden field-----------------
+  //--------------------------------------------------------------
 
-      // Limpia errores previos
-      $(form).find('.text-danger').remove();
+  // Get btns, list of ingredients and the hidden fields to add
+  ingredientBtn = document.getElementById("ingredient-btn");
+  ingredientsList = document.getElementById("ingredients-list");
+  ingredientAdder = document.getElementById("ingredient-adder");
+  ingredientField = document.getElementById("ingredient-field");
+  quantityField = document.getElementById("quantity-field");
+  addBtn = document.getElementById("add-ingredient-btn");
+  cancelBtn = document.getElementById("cancel-ingredient-btn");
 
-      $.ajax({
-        url: $(form).attr('action'),
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: {'X-Requested-With': 'XMLHttpRequest'},
-        success: function(response) {
-          if (response.success) {
-            // Puedes redirigir, cerrar modal, o mostrar mensaje de éxito
-            window.location.href = "/"; // O a donde quieras
-          } else if (response.errors) {
-            // Muestra los errores debajo de cada campo
-            for (const [field, errors] of Object.entries(response.errors)) {
-              const fieldElem = $(form).find('[name="' + field + '"]');
-              errors.forEach(error => {
-                fieldElem.after('<div class="text-danger">' + error + '</div>');
-              });
-            }
-          }
-        }
-      });
+  // Event listener to display the add fields when click add ingredient
+  ingredientBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    ingredientAdder.classList.remove("d-none");
+  });
+
+  // Event listener to hide the add fields when click cancel
+  cancelBtn.addEventListener("click", () => {
+    ingredientAdder.classList.add("d-none");
+  });
+
+  // Function to clean and capitalize the text
+  // This function trims the text, replaces multiple spaces with a single space
+  // and capitalizes the first letter of the cleaned text
+  function cleanAndCapitalize(text) {
+    const cleaned = text.trim().replace(/\s+/g, " ").toLowerCase();
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  // Event listener to add the ingredient and quantity in the list and in the hidden field
+  addBtn.addEventListener("click", () => {
+    // Get the values of the fields, standarize with trim() and capitalize
+    const ingredient = cleanAndCapitalize(ingredientField.value);
+    const quantity = cleanAndCapitalize(quantityField.value);
+
+    // Validate that the fields are not empty
+    if (ingredient === "" || quantity === "") {
+      alert("Please fill in both fields.");
+      return;
+    }
+
+    // Create a new list item for the ingredient
+    const li = document.createElement("li");
+    li.className = "d-flex align-items-center mb-1";
+    li.innerHTML = `
+    <span class="flex-grow-1">${ingredient} - ${quantity}</span>
+    <button type="button" class="btn btn-sm btn-danger ms-2 remove-ingredient" title="Remove">&times;</button>
+    `;
+    ingredientsList.appendChild(li);
+    // Add the ingredient to the hidden field as JSON
+    const ingredientsInput = document.getElementById("ingredients");
+    let ingredients = JSON.parse(ingredientsInput.value || "[]");
+    ingredients.push({ name: ingredient, quantity: quantity });
+    ingredientsInput.value = JSON.stringify(ingredients);
+
+    // Add event listener to the remove ingredient button
+    // Generated by copilot
+    li.querySelector('.remove-ingredient').addEventListener('click', function() {
+      // Remove from DOM
+      li.remove();
+      // Remove from hidden field (by value)
+      let ingredients = JSON.parse(ingredientsInput.value || "[]");
+      ingredients = ingredients.filter(obj => !(obj.name === ingredient && obj.quantity === quantity));
+      ingredientsInput.value = JSON.stringify(ingredients);
     });
-  </script>
+
+    // Clear the input fields and hide the adder
+    ingredientField.value = "";
+    quantityField.value = "";
+    ingredientAdder.classList.add("d-none");
+  });
+
+  //--------------------------------------------------------------
+  //------------- Initialize Select2 for tags---------------------
+  // ------------ Generated by copilot ---------------------------  
+  //--------------------------------------------------------------    
+  
+  document.addEventListener("DOMContentLoaded", function() {
+    // Check if jQuery and Select2 are loaded
+    if (window.$ && window.$.fn && window.$.fn.select2) {
+      window.$('#tags').select2({
+        width: '100%',
+        placeholder: "Select tags",
+        allowClear: true
+      });
+    }
+  });
+</script>
 {% endblock %}
