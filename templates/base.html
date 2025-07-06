@@ -91,9 +91,9 @@
     {% endif %} {% endwith %}
 
     <div class="d-flex">
-      <!-- Sidebar aquí -->
+      <!-- Sidebar when authenticated-->
+      {% if user.is_authenticated %}
       <div>
-        <!-- Sidebar -->
         <nav
           id="sidebarMenu"
           class="d-lg-block bg-light sidebar collapse"
@@ -141,7 +141,9 @@
           <span class="navbar-toggler-icon"></span> Menu
         </button>
       </div>
-      <!-- Contenido principal -->
+      {% endif %}
+
+      <!-- Main content -->
       <div class="container-fluid flex-grow-1">
         {% block content %}
         <!-- Page-specific content goes here -->

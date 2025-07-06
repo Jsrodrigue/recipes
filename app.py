@@ -1,5 +1,5 @@
 from flask import Flask
-from instance.config import Config
+from config import Config
 from extensions import db, login_manager
 from flask_login import current_user # current_user object to manage current user
 from models import User

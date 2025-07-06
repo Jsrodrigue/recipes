@@ -26,5 +26,5 @@ def new():
 
     if form.validate_on_submit():
         save_recipe(form)
-        return redirect("recipes.new")
+        return redirect(url_for("recipes.new"))
     return render_template("recipes/add_recipe_page.html", form=form, user=current_user)

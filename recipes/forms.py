@@ -4,9 +4,12 @@ from wtforms.validators import DataRequired
 from flask_wtf.file import FileAllowed, FileRequired
 from werkzeug.utils import secure_filename
 import os
-from flask import flash, current_app #Proxy to use the current app
+from flask import redirect, flash ,current_app #Proxy to use the current app and aviod circular calls
 from models import Recipe, Tag
 from extensions import db
+from sqlalchemy.exc import SQLAlchemyError
+from flask_login import current_user
+import uuid #module used to generate unique name to a file
 
 # Form to create a new recipe
 class NewRecipeForm(FlaskForm):
@@ -28,23 +31,42 @@ def save_recipe(form):
         filename = None
         if photo:
             # Add unique name to filename
-            filename = secure_filename(photo.filename)
-            photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-        
-        # Save the recipe to the database
+            original_filename = secure_filename(photo.filename)
+            unique_name = uuid.uuid4().hex
+            extension = os.path.splitext(original_filename)[1]
+            filename = f"{unique_name}{extension}"
+
+            try:
+                photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+            except Exception as e:
+                current_app.logger.exception("Error saving uploaded file")
+                flash("Failed to save the photo", "danger")
+                filename = None
+                return
+            
+        # Create recipe object
         recipe = Recipe(
             title=form.title.data,
             description=form.description.data,
             instructions=form.instructions.data,
-            ingredients=form.ingredients.data,  # If you store as JSON string
-            photo_filename=filename
+            ingredients=form.ingredients.data,  # Store as JSON string
+            photo_filename=filename,
+            user=current_user
         )
-        # Add tags
-        recipe.tags = Tag.query.filter(Tag.id.in_(form.tags.data)).all()
+
+        
+
+       # Save the recipe to the database
         try: 
             db.session.add(recipe)
+            # Assign selected tags from the form to the recipe using their IDs
+            recipe.tags = Tag.query.filter(Tag.id.in_(form.tags.data)).all()
             db.session.commit()
             flash("Recipe successfully added", 'success')
-        except:
-            flash("Error saving recipe", 'danger')
-        
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash("Database error", 'danger')
+            current_app.logger.error(f"SQLAlchemy error: {str(e)}")
+        except Exception as e:
+            flash("Unexpected error", 'danger')
+            current_app.logger.exception("Unexpected error while saving recipe")
