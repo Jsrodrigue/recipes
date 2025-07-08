@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if recipe %}
+    <h1 class="text-center">{{ recipe.title.title() }}</h1>
+
+    {% if recipe.photo_filename %}
+      <!-- Image of the recipe -->
+      <div class="container d-flex justify-content-center my-5">
+        <img
+          src="{{ url_for('static', filename='uploads/' + recipe.photo_filename) }}"
+          class="food-image"
+          alt="Recipe image"
+        />
+      </div>
+    {% endif %}
+
+    <div class="container d-flex justify-content-center">
+      <h4>Ingredients</h4>
+    </div>
+    <div class="container d-flex justify-content-center">
+      <ul>
+        {% for ingredient in recipe.ingredients %}
+          <li>{{ ingredient['name'].title() }} - {{ ingredient['quantity'] }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+     <div class="container d-flex justify-content-center mt-5">
+       <h4>Description</h4>
+    </div>
+    <div class="container d-flex justify-content-center">  
+      <p>{{ recipe.description.capitalize() | replace('\n', '<br />') | safe }}</p>
+    </div>
+
+    <div class="container d-flex justify-content-center mt-5">
+       <h4>Instructions</h4>
+    </div>
+    <div class="container d-flex justify-content-center">  
+      <p>{{ recipe.instructions | replace('\n', '<br />') | safe }}</p>
+    </div>
+
+  {% else %}
+    <h1 class="text-center">Invalid Recipe</h1>
+  {% endif %}
+{% endblock %}

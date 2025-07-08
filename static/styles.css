@@ -7,3 +7,13 @@
     border-right: 1px solid #ddd;
   }
 }
+
+/* Make de height to bee the same in the card */
+.food-image-card{
+  height: 12rem;
+}
+
+.food-image{
+  height: 15rem;
+  border-radius: 10px;
+}
