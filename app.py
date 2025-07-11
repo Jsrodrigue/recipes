@@ -6,6 +6,7 @@ from models import User
 from flask_migrate import Migrate
 import click
 from models import Tag
+from admin import setup_admin
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -27,6 +28,9 @@ app.register_blueprint(recipes, url_prefix='/recipes')
 login_manager.init_app(app)
 # Set login route to redirect non-loged users when try to access routes that requieres login 
 login_manager.login_view = 'auth.login'
+
+# Initialize the admin interface
+admin = setup_admin(app)
 
 
 # Decorator to specify the function that login_manager uses the class User as user object 

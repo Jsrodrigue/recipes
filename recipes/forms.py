@@ -10,6 +10,7 @@ from extensions import db
 from sqlalchemy.exc import SQLAlchemyError
 from flask_login import current_user
 import uuid #module used to generate unique name to a file
+import json
 
 # Form to create a new recipe
 class NewRecipeForm(FlaskForm):
@@ -70,3 +71,56 @@ def save_recipe(form):
         except Exception as e:
             flash("Unexpected error", 'danger')
             current_app.logger.exception("Unexpected error while saving recipe")
+
+def update_recipe(form, recipe_id):
+    if form.validate_on_submit():
+        recipe = Recipe.get_by_id(recipe_id)
+        if not recipe:
+            flash("Recipe not found", "danger")
+            return
+
+        # Update fields
+        recipe.title = form.title.data
+        recipe.description = form.description.data
+        recipe.instructions = form.instructions.data
+
+        # Ingredients: always save as JSON string
+        ingredients_data = form.ingredients.data
+        if isinstance(ingredients_data, str):
+            recipe.ingredients = json.loads(ingredients_data)
+        else:
+            recipe.ingredients = ingredients_data
+
+        # Tags
+        recipe.tags = Tag.query.filter(Tag.id.in_(form.tags.data)).all()
+
+        # Photo update 
+        photo = form.photo.data
+        if photo:
+            # Save new photo
+            original_filename = secure_filename(photo.filename)
+            unique_name = uuid.uuid4().hex
+            extension = os.path.splitext(original_filename)[1]
+            filename = f"{unique_name}{extension}"
+            try:
+                photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                # Only after saving new photo, delete the old one
+                if recipe.photo_filename:
+                    old_path = os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo_filename)
+                    try:
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                    except Exception as e:
+                        current_app.logger.warning(f"Could not delete old photo: {e}")
+                recipe.photo_filename = filename
+            except Exception as e:
+                current_app.logger.exception("Error saving uploaded file")
+                flash("Failed to save the new photo", "danger")
+
+        try:
+            db.session.commit()
+            flash("Recipe updated successfully", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash("Error updating recipe", "danger")
+            current_app.logger.exception("Error updating recipe")

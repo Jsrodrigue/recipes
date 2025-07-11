@@ -25,6 +25,16 @@
           <p class="card-text card-content">
             {{ recipe.description.capitalize() }}
           </p>
+
+          <!-- Tags for each recipe card -->
+          {% if recipe.tags %}
+          <div class="mb-2">
+            {% for tag in recipe.tags %}
+            <span class="badge bg-secondary me-1">{{ tag.name }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
           <div class="d-flex justify-content-between">
             <!--Link to see the recipe-->
             <a
