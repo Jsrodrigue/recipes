@@ -1,40 +1,84 @@
+from flask import redirect, url_for, request
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from flask_login import current_user
+from wtforms import BooleanField, TextAreaField
+import json
+
 from extensions import db
 from models import User, Recipe, Tag
-from flask import redirect, url_for, request
-from flask_login import current_user
-from wtforms import BooleanField
-from flask_wtf import FlaskForm
 
 
+# Base class that restricts access to admin panel
 class AdminModelView(ModelView):
     def is_accessible(self):
-        # Only allow access if the current user is authenticated and is an admin
         return current_user.is_authenticated and getattr(current_user, 'is_admin', False)
 
     def inaccessible_callback(self, name, **kwargs):
-        # If user is not allowed access, redirect to the login page
         return redirect(url_for('auth.login', next=request.url))
-    
 
+    can_view_details = True
+    column_display_pk = True
+
+
+# Custom admin view for User
 class UserAdmin(AdminModelView):
-    form_columns = ['username', 'email', 'is_admin']
-    
+    form_overrides = {
+        'is_admin': BooleanField,
+    }
+    form_args = {
+        'is_admin': {
+            'label': 'Admin User',
+            'default': False,
+        }
+    }
+    column_list = ['id', 'username', 'email', 'is_admin']
+    form_columns = ['username', 'email', 'password_hash', 'is_admin']
 
+
+# Custom admin view for Recipe with relationships
 class RecipeAdmin(AdminModelView):
-    form_columns = ['title', 'description', 'ingredients', 'instructions', 'created_at', 'user_id', 'tags']
-    
+    form_columns = [
+        'title',
+        'description',
+        'ingredients',
+        'instructions',
+        'created_at',
+        'user',    # Shows dropdown with users
+        'tags'     # Shows multiselect for tags
+    ]
+    column_list = [
+        'id',
+        'title',
+        'user.username',  # Show username of author
+        'created_at',
+    ]
+
+    form_overrides = {
+        'ingredients': TextAreaField,
+    }
+
+    def on_model_change(self, form, model, is_created):
+        # Convert JSON string in ingredients to dict
+        if isinstance(model.ingredients, str):
+            try:
+                model.ingredients = json.loads(model.ingredients)
+            except Exception:
+                raise ValueError("Ingredients must be valid JSON")
+
+
+# Tag admin
+class TagAdmin(AdminModelView):
+    column_list = ['id', 'name']
+    form_columns = ['name']
+
+
+# Setup function to initialize admin
 def setup_admin(app):
-    # Create the Flask-Admin instance attached to the Flask app
     admin = Admin(app, name="Admin", template_mode="bootstrap4", url="/admin")
 
-    # Add the User model view, using the special UserAdmin view to manage the is_admin checkbox
     admin.add_view(UserAdmin(User, db.session))
-
-    # Add the Recipe and Tag models with normal admin access control (no special form fields)
-    admin.add_view(AdminModelView(Recipe, db.session))
-    admin.add_view(AdminModelView(Tag, db.session))
+    admin.add_view(RecipeAdmin(Recipe, db.session))
+    admin.add_view(TagAdmin(Tag, db.session))
 
     return admin
-

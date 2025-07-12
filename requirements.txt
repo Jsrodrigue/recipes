@@ -5,3 +5,5 @@ Flask-Login
 python-dotenv
 email_validator
 Flask-Migrate
+requests
+flask_admin

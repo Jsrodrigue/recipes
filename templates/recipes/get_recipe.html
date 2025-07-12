@@ -1,18 +1,42 @@
 {% extends "base.html" %} {% block content %} {% if recipe %}
 <h1 class="text-center">{{ recipe.title.title() }}</h1>
 
-{% if recipe.photo_filename %}
-<!-- Image of the recipe -->
-<div class="container d-flex justify-content-center my-5">
-  <img
-    src="{{ url_for('static', filename='uploads/' + recipe.photo_filename) }}"
-    class="food-image"
-    alt="Recipe image"
-  />
-</div>
-{% endif %}
 
- <!--Tags-->
+<!-- Image of the recipe with edit and delete buttons stacked vertically -->
+<div class="container d-flex flex-column align-items-center my-5">
+  {% if recipe.photo_filename %}
+    <img
+      src="{{ url_for('static', filename='uploads/' + recipe.photo_filename) }}"
+      class="food-image mb-3"
+      alt="Recipe image"
+    />
+  {% endif %}
+
+  <div class="d-flex gap-2">
+    <!-- Edit recipe button -->
+    <form
+      method="get"
+      action="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}"
+    >
+      <button type="submit" class="btn edit-recipe-btn" title="Edit">
+        <i class="bi bi-pencil"></i>
+      </button>
+    </form>
+
+    <!-- Delete recipe button -->
+    <form
+      method="post"
+      action="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}"
+      onsubmit="return confirm('Are you sure you want to delete this recipe?');"
+    >
+      <button type="submit" class="btn delete-recipe-btn" title="Delete">
+        <i class="bi bi-trash"></i>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!--Tags-->
 {% if recipe.tags %}
 <div class="container d-flex justify-content-center mb-3">
   {% for tag in recipe.tags %}
@@ -45,6 +69,8 @@
 <div class="container d-flex justify-content-center">
   <p>{{ recipe.instructions | replace('\n', '<br />') | safe }}</p>
 </div>
+
+
 
 {% else %}
 <h1 class="text-center">Invalid Recipe</h1>

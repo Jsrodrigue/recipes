@@ -60,7 +60,9 @@
           </ul>
           <!-- Hidden field to add the JSON ingredients list-->
           {{ form.ingredients(id="ingredients", type="hidden", value=recipe.ingredients|tojson if recipe else "[]") }}
-
+          {% for error in form.ingredients.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
           <!-- Formulario para agregar ingrediente (oculto por defecto) -->
           <div id="ingredient-adder" class="row mb-2 g-2 d-none">
             <div class="col-4">
