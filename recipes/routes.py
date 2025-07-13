@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, jsonify, request, current_app
 import uuid
 from flask_login import login_required, current_user
-from .forms import NewRecipeForm, save_recipe, update_recipe
+from ..forms.recipe_forms import NewRecipeForm
+from ..services.recipe_services import  save_recipe, update_recipe
 from models import Recipe, Tag
 from extensions import db
 import json

@@ -51,6 +51,10 @@ class Recipe(db.Model):
     ingredients: Mapped[dict] = mapped_column(JSON, nullable=False)
     instructions: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
+
+    ## Fields to include recipes for external API
+    source = db.Column(db.String(20), default="local")  # 'local' or 'api'
+    external_id = db.Column(db.String, nullable=True)  # ID of API for external recipes
     
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     user: Mapped["User"] = relationship(back_populates="recipes")

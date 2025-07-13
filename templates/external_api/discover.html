@@ -1,14 +1,14 @@
-{% extends "base.html"%} {%block content%}
-<h1>My recipes</h1>
-<div class="container mt-5">
-  <div class="row">
-    {%for recipe in recipes%}
+{% extends "base.html"%}
+
+{%block content%}
+<h1>Discover new recipes</h1>
+{%for recipe in recipes%}
     <div class="col-12 col-md-6 col-lg-4 mb-4">
       <!--Card with recipe-->
       <div class="card shadow-sm rounded-4 border-0 recipe-card">
         {% if recipe.photo_filename%}
         <img
-          src="{{ url_for('static', filename='uploads/' + recipe.photo_filename) }}"
+          src="{{ recipe.photo_filename }}"
           class="card-img-top rounded-top-4 food-image-card"
           alt="Recipe image"
         />
@@ -39,16 +39,13 @@
           <div class="d-flex justify-content-between">
             <!--Link to see the recipe-->
             <a
-              href="{{url_for('recipes.get_recipe', recipe_id=recipe.id)}}"
+              href="#"
               class="btn w-100"
               >See recipe</a
             >
 
             <!--Edit recipe button-->
-            <form
-              method="get"
-              action="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}"
-            >
+            <form>
               <button type="submit" class="btn edit-recipe-btn" title="Edit">
                 <i class="bi bi-pencil"></i>
               </button>
@@ -59,7 +56,6 @@
               type="submit"
               class="btn delete-recipe-btn"
               title="Delete"
-              data-url="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}"
             >
               <i class="bi bi-trash"></i>
             </button>
@@ -69,40 +65,4 @@
     </div>
 
     {% endfor %}
-  </div>
-</div>
-
-<script>
-  const removeBtns = document.querySelectorAll(".delete-recipe-btn");
-  removeBtns.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      // Confirmation message
-      const confirmed = confirm("Are you sure you want to delete this recipe?");
-      if (!confirmed) {
-        return;
-      }
-      // Get url to delete
-      const url = btn.dataset.url;
-
-      try {
-        // Make a petision on server to delete the recipe
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-
-        if (!response.ok) {
-          throw new Error("Error deleting the recipe");
-        } else {
-          // Remove the card from the DOM
-          const recipeCard = btn.closest(".recipe-card");
-          if (recipeCard) recipeCard.remove();
-        }
-      } catch (error) {
-        alert(error.message);
-      }
-    });
-  });
-</script>
-{% endblock%}
+    {% endblock%}

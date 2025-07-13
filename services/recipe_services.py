@@ -1,32 +1,16 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, HiddenField, SubmitField, SelectMultipleField, FileField
-from wtforms.validators import DataRequired
-from flask_wtf.file import FileAllowed, FileRequired
+
 from werkzeug.utils import secure_filename
 import os
-from flask import redirect, flash ,current_app #Proxy to use the current app and aviod circular calls
+from flask import flash ,current_app #Proxy to use the current app and aviod circular calls
 from models import Recipe, Tag
 from extensions import db
 from sqlalchemy.exc import SQLAlchemyError
-from flask_login import current_user
 import uuid #module used to generate unique name to a file
 import json
-
-# Form to create a new recipe
-class NewRecipeForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    description = TextAreaField('Description')
-    instructions = TextAreaField('Instructions')
-    # Use a hiddenField because we will save the ingredients in a list of dictionaries with keys 'name' 'quantity'
-    ingredients = HiddenField('Ingredients (JSON)', validators=[DataRequired()])
-    tags = SelectMultipleField('Tags', coerce=int)
-    photo = FileField('Photo', validators=[
-        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Only image files are allowed')
-    ])
-    submit = SubmitField('Save')
+from flask_login import current_user
 
 # Function to save a recipe from the form
-def save_recipe(form):
+def save_recipe(form, source):
     if form.validate_on_submit():
         photo = form.photo.data
         filename = None
@@ -53,6 +37,7 @@ def save_recipe(form):
             ingredients=form.ingredients.data,  # Store as JSON string
             photo_filename=filename,
             user=current_user
+            
         )
 
         
