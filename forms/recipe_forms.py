@@ -16,3 +16,8 @@ class NewRecipeForm(FlaskForm):
         FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Only image files are allowed')
     ])
     submit = SubmitField('Save')
+
+    def __init__(self, all_tags, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Asign the tags to the form
+        self.tags.choices = [(tag.id, tag.name) for tag in all_tags]

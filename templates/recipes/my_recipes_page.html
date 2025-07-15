@@ -1,12 +1,14 @@
-{% extends "base.html"%} {%block content%}
+{% extends "base.html"%}
+
+{% block content %}
 <h1>My recipes</h1>
 <div class="container mt-5">
   <div class="row">
-    {%for recipe in recipes%}
-    <div class="col-12 col-md-6 col-lg-4 mb-4">
-      <!--Card with recipe-->
+    {% for recipe in recipes %}
+    <div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+      <!-- Card with recipe -->
       <div class="card shadow-sm rounded-4 border-0 recipe-card">
-        {% if recipe.photo_filename%}
+        {% if recipe.photo_filename %}
         <img
           src="{{ url_for('static', filename='uploads/' + recipe.photo_filename) }}"
           class="card-img-top rounded-top-4 food-image-card"
@@ -14,14 +16,14 @@
         />
         {% else %}
         <img
-          src="{{ url_for('static', filename='uploads/' + 'no_pic.png') }}"
+          src="{{ url_for('static', filename='uploads/no_pic.png') }}"
           class="card-img-top rounded-top-4 food-image-card"
           alt="Recipe image"
         />
-        {% endif%}
+        {% endif %}
         <div class="card-body">
           <h5 class="card-title fw-bold card-title">
-            {{recipe.title.title()}}
+            {{ recipe.title.title() }}
           </h5>
           <p class="card-text card-content">
             {{ recipe.description.capitalize() }}
@@ -37,14 +39,14 @@
           {% endif %}
 
           <div class="d-flex justify-content-between">
-            <!--Link to see the recipe-->
+            <!-- Link to see the recipe -->
             <a
-              href="{{url_for('recipes.get_recipe', recipe_id=recipe.id)}}"
+              href="{{ url_for('recipes.get_recipe', recipe_id=recipe.id) }}"
               class="btn w-100"
               >See recipe</a
             >
 
-            <!--Edit recipe button-->
+            <!-- Edit recipe button -->
             <form
               method="get"
               action="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}"
@@ -54,7 +56,7 @@
               </button>
             </form>
 
-            <!--Delete recipe button-->
+            <!-- Delete recipe button -->
             <button
               type="submit"
               class="btn delete-recipe-btn"
@@ -67,7 +69,6 @@
         </div>
       </div>
     </div>
-
     {% endfor %}
   </div>
 </div>
@@ -85,7 +86,7 @@
       const url = btn.dataset.url;
 
       try {
-        // Make a petision on server to delete the recipe
+        // Make a request on server to delete the recipe
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -105,4 +106,4 @@
     });
   });
 </script>
-{% endblock%}
+{% endblock %}

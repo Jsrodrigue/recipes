@@ -2,67 +2,74 @@
 
 {%block content%}
 <h1>Discover new recipes</h1>
-{%for recipe in recipes%}
-    <div class="col-12 col-md-6 col-lg-4 mb-4">
-      <!--Card with recipe-->
-      <div class="card shadow-sm rounded-4 border-0 recipe-card">
-        {% if recipe.photo_filename%}
-        <img
-          src="{{ recipe.photo_filename }}"
-          class="card-img-top rounded-top-4 food-image-card"
-          alt="Recipe image"
-        />
-        {% else %}
-        <img
-          src="{{ url_for('static', filename='uploads/' + 'no_pic.png') }}"
-          class="card-img-top rounded-top-4 food-image-card"
-          alt="Recipe image"
-        />
-        {% endif%}
-        <div class="card-body">
-          <h5 class="card-title fw-bold card-title">
-            {{recipe.title.title()}}
-          </h5>
-          <p class="card-text card-content">
-            {{ recipe.description.capitalize() }}
-          </p>
 
-          <!-- Tags for each recipe card -->
-          {% if recipe.tags %}
-          <div class="mb-2">
-            {% for tag in recipe.tags %}
-            <span class="badge bg-secondary me-1">{{ tag.name }}</span>
-            {% endfor %}
-          </div>
+<!--Boostrap Carrousel of random recipes-->
+<div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="1500">
+  
+  <!-- Down Indicators -->
+  <div class="carousel-indicators">
+    {% for recipe in recipes %}
+      <button type="button"
+              data-bs-target="#recipeCarousel"
+              data-bs-slide-to="{{ loop.index0 }}"
+              class="down-indicator {% if loop.first %}active{% endif %}"
+              aria-current="{% if loop.first %}true{% endif %}"
+              aria-label="Slide {{ loop.index }}">
+      </button>
+    {% endfor %}
+  </div>
+
+  <!-- Content Carrousel -->
+  <div class="carousel-inner">
+    {% for recipe in recipes %}
+    <div class="carousel-item {% if loop.first %}active{% endif %}">
+      <div class="d-flex justify-content-center py-4">
+        <!-- Recipe Card -->
+        <div class="card shadow-sm rounded-4 border-0 recipe-card">
+          {% if recipe.photo_url %}
+          <img src="{{ recipe.photo_url }}" class="card-img-top rounded-top-4 food-image-card" alt="Recipe image" />
+          {% else %}
+          <img src="{{ url_for('static', filename='uploads/no_pic.png') }}" class="card-img-top rounded-top-4 food-image-card" alt="No image" />
           {% endif %}
 
-          <div class="d-flex justify-content-between">
-            <!--Link to see the recipe-->
-            <a
-              href="#"
-              class="btn w-100"
-              >See recipe</a
-            >
+          <div class="card-body">
+            <h5 class="card-title fw-bold">{{ recipe.title.title() }}</h5>
+            <p class="card-text">{{ recipe.description.capitalize() }}</p>
 
-            <!--Edit recipe button-->
-            <form>
-              <button type="submit" class="btn edit-recipe-btn" title="Edit">
-                <i class="bi bi-pencil"></i>
-              </button>
-            </form>
+            {% if recipe.tags %}
+            <div class="mb-2">
+              {% for tag in recipe.tags %}
+              <span class="badge bg-secondary me-1">{{ tag.name }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
 
-            <!--Delete recipe button-->
-            <button
-              type="submit"
-              class="btn delete-recipe-btn"
-              title="Delete"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('external_api.get_recipe', external_id=recipe.external_id) }}" class="btn w-100">See recipe</a>
+              <form method="get"
+              action="{{ url_for('external_api.save', external_id=recipe.external_id) }}">
+                <button type="submit" class="btn edit-recipe-btn" title="Save">
+                  <i class="bi bi-save"></i>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
     {% endfor %}
+  </div>
+
+  <!-- Carrusel controls -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon custom-carousel-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+
+  <button class="carousel-control-next" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon custom-carousel-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+
     {% endblock%}

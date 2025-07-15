@@ -53,13 +53,14 @@ class Recipe(db.Model):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
     ## Fields to include recipes for external API
-    source = db.Column(db.String(20), default="local")  # 'local' or 'api'
-    external_id = db.Column(db.String, nullable=True)  # ID of API for external recipes
-    
+    source: Mapped[str] = mapped_column(String(20), default="local") # 'local' or 'api'
+    external_id: Mapped[str | None] = mapped_column(String, nullable=True) # ID of API for external recipes
+    photo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     user: Mapped["User"] = relationship(back_populates="recipes")
 
-    photo_filename: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    photo_filename: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     tags: Mapped[list["Tag"]] = relationship(
         secondary=recipe_tags,

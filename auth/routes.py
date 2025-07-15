@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, flash, url_for
-from ..forms.auth_forms import RegistrationForm, LoginForm
+from forms.auth_forms import RegistrationForm, LoginForm
 #Ex of use: login_user(user_id) login an user, logout_user() logs out a session, 
 # @login_required decorator to protect routes, current_user User object with session 
 from flask_login import login_user, logout_user, login_required, current_user

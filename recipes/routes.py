@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, jsonify, request, current_app
 import uuid
 from flask_login import login_required, current_user
-from ..forms.recipe_forms import NewRecipeForm
-from ..services.recipe_services import  save_recipe, update_recipe
+from forms.recipe_forms import NewRecipeForm
+from services.recipe_services import  save_recipe, update_recipe, prefill_form_with_recipe
 from models import Recipe, Tag
 from extensions import db
 import json
 import os
+import html
 
 recipes = Blueprint('recipes', __name__)
 
@@ -21,11 +22,9 @@ def index():
 @login_required
 def new():
     
-    form = NewRecipeForm()
-
     # Get the tags in the db by alphabetical order and add to the form
     all_tags = Tag.query.order_by(Tag.name).all()
-    form.tags.choices = [(tag.id, tag.name) for tag in all_tags]
+    form = NewRecipeForm(all_tags)
 
     if form.validate_on_submit():
         save_recipe(form)
@@ -37,7 +36,11 @@ def new():
 @login_required
 def get_recipe(recipe_id):
     recipe = Recipe.query.get(recipe_id)
-    
+    print(repr(recipe.instructions))
+    recipe.title = html.escape(recipe.title)
+    recipe.description = html.escape(recipe.description).replace("\r\n", "<br>")
+    recipe.instructions = html.escape(recipe.instructions).replace("\r\n", "<br>")
+   
     # Check if ingredients is a str and if so transform to JSON
     if isinstance(recipe.ingredients, str):
         try:
@@ -85,7 +88,7 @@ def delete_recipe(recipe_id):
 @recipes.route('edit/<recipe_id>', methods=['GET', 'POST'])
 @login_required
 def edit_recipe(recipe_id):
-    form = NewRecipeForm()
+
     recipe = Recipe.get_by_id(recipe_id)
     
     # Redirect to index if the recipe is not found
@@ -93,36 +96,17 @@ def edit_recipe(recipe_id):
         flash("Recipe not found", "danger")
         return redirect(url_for("recipes.index"))
     
-    # Get the tags in the db by alphabetical order and add to the form
+    # Get the tags in the db by alphabetical order and use in the form
     all_tags = Tag.query.order_by(Tag.name).all()
-    form.tags.choices = [(tag.id, tag.name) for tag in all_tags]
+    form = NewRecipeForm(all_tags)
 
+    
     if form.validate_on_submit():
         update_recipe(form, recipe_id)
         return redirect(url_for("recipes.get_recipe", recipe_id=recipe_id))
     
-    # Prefill the form fields
-    form.title.data = recipe.title
-    form.description.data = recipe.description
-    form.instructions.data = recipe.instructions 
-    #Need to map correctly ingredients and tags
-
-    # Convert to python list if it's a JSON string
-    if isinstance(recipe.ingredients, str):
-        try:
-            ingredients_list = json.loads(recipe.ingredients)
-        except Exception:
-            ingredients_list = []
-    else:
-        ingredients_list = recipe.ingredients if recipe.ingredients else []
-
-    form.ingredients.data = json.dumps(ingredients_list)
-    form.tags.data = [tag.id for tag in recipe.tags]
-
-    # Convert to python dictionary
-    # Check if ingredients is a str and if so transform to JSON
-    if isinstance(recipe.ingredients, str):
-        recipe.ingredients = json.loads(recipe.ingredients)
+    # Set the fields in the form
+    prefill_form_with_recipe(recipe, form)
 
     return render_template("recipes/add_edit_recipe.html", form=form, user=current_user, recipe= recipe)
 

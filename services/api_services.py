@@ -1,12 +1,10 @@
 ######################### Utils to consult an external recipes API #####################
-######################### Functions were defined with help of GPT ######################
+######################### Functions for fetching were defined with help of GPT #########
 
 import requests
 from models import Recipe
-from flask_login import current_user
-import os
 from datetime import datetime, timezone
-from werkzeug.utils import secure_filename
+import html
 
 
 
@@ -30,6 +28,15 @@ def fetch_random_recipe():
         return data["meals"][0] if data["meals"] else None
     return None
 
+# Get recipe from api by external_id
+def fetch_recipe_by_id(external_id):
+  url = f"https://www.themealdb.com/api/json/v1/1/lookup.php?i={external_id}"
+  response = requests.get(url)
+  if response.status_code == 200:
+        data = response.json()
+        return data.get("meals", [])
+  return []
+
 
 # Get the ingredients from the API recipe in a list fo dictionaries
 def get_ingredients(api_recipe):
@@ -45,13 +52,14 @@ def get_ingredients(api_recipe):
     return ingredients
 
 # Function to convert the recipe from API to my model 
-def convert_api_to_recipe(api_recipe, user_id):
+def convert_api_to_recipe(api_recipe):
     # Set data
-    title = api_recipe.get("strMeal", "Untitled")
-    description = api_recipe.get("strCategory", "") + " | " + api_recipe.get("strArea", "")
-    instructions = api_recipe.get("strInstructions", "")
+    title = html.escape(api_recipe.get("strMeal", "Untitled"))
+    description = html.escape(api_recipe.get("strCategory", "") + " | " + api_recipe.get("strArea", ""))
+    instructions = html.escape(api_recipe.get("strInstructions", ""))
     ingredients = get_ingredients(api_recipe)
     image_url = api_recipe.get("strMealThumb")  # URL from internet
+    external_id=api_recipe.get("idMeal")
 
     # Create instance
     recipe = Recipe(
@@ -59,9 +67,10 @@ def convert_api_to_recipe(api_recipe, user_id):
         description=description,
         ingredients=ingredients,
         instructions=instructions,
-        photo_filename=image_url,  # Guardamos solo la URL
-        user_id=user_id,
-        created_at=datetime.now(timezone.utc)
+        photo_url=image_url,
+        created_at=datetime.now(timezone.utc),
+        source='api',
+        external_id=external_id
     )
 
     return recipe

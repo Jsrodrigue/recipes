@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import uuid #module used to generate unique name to a file
 import json
 from flask_login import current_user
+from forms.recipe_forms import NewRecipeForm
 
 # Function to save a recipe from the form
 def save_recipe(form, source):
@@ -109,3 +110,30 @@ def update_recipe(form, recipe_id):
             db.session.rollback()
             flash("Error updating recipe", "danger")
             current_app.logger.exception("Error updating recipe")
+
+# Function to prefill a form with the recipes data
+def prefill_form_with_recipe(recipe, form):
+  
+    # Prefill the form fields
+    form.title.data = recipe.title
+    form.description.data = recipe.description
+    form.instructions.data = recipe.instructions
+    
+    #Need to map correctly ingredients and tags
+    # Convert to python list if it's a JSON string
+    if isinstance(recipe.ingredients, str):
+        try:
+            ingredients_list = json.loads(recipe.ingredients)
+        except Exception:
+            ingredients_list = []
+    else:
+        ingredients_list = recipe.ingredients if recipe.ingredients else []
+
+    form.ingredients.data = json.dumps(ingredients_list)
+    form.tags.data = [tag.id for tag in recipe.tags]
+
+    # Convert to python dictionary
+    # Check if ingredients is a str and if so transform to JSON
+    if isinstance(recipe.ingredients, str):
+        recipe.ingredients = json.loads(recipe.ingredients)
+
