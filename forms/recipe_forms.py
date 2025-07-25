@@ -15,6 +15,9 @@ class NewRecipeForm(FlaskForm):
     photo = FileField('Photo', validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Only image files are allowed')
     ])
+    source = HiddenField() # Field to store the source 'local' or 'api' 
+    photo_url = HiddenField() # Field to store the photo_url for external recipes 
+    external_id = HiddenField()
     submit = SubmitField('Save')
 
     def __init__(self, all_tags, *args, **kwargs):

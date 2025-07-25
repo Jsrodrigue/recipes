@@ -1,0 +1,71 @@
+{# templates/recipes/partials/recipe_card.html #}
+
+<div class="col-12 col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+  <div class="card shadow-sm rounded-4 border-0 recipe-card">
+
+    {# Image: local (photo_filename) or API (photo_url) or default #}
+    {% if recipe.photo_filename %}
+      <img
+        src="{{ url_for('static', filename='uploads/' + recipe.photo_filename) }}"
+        class="card-img-top rounded-top-4 food-image-card"
+        alt="Recipe image"
+      />
+    {% elif recipe.photo_url %}
+      <img
+        src="{{ recipe.photo_url }}"
+        class="card-img-top rounded-top-4 food-image-card"
+        alt="Recipe image"
+      />
+    {% else %}
+      <img
+        src="{{ url_for('static', filename='uploads/no_pic.png') }}"
+        class="card-img-top rounded-top-4 food-image-card"
+        alt="No image"
+      />
+    {% endif %}
+
+    <div class="card-body">
+      <h5 class="card-title fw-bold">{{ recipe.title.title() | safe }}</h5>
+      <p class="card-text">{{ recipe.description.capitalize() | safe }}</p>
+
+      {# Tags #}
+      {% if recipe.tags %}
+      <div class="mb-2">
+        {% for tag in recipe.tags %}
+          <span class="badge bg-secondary me-1">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="d-flex justify-content-between">
+
+        {# Link to see the recipe (depends if local or api) #}
+        {% if recipe.id %}
+          <a href="{{ url_for('recipes.get_recipe', recipe_id=recipe.id) }}" class="btn w-100">See recipe</a>
+        {% elif recipe.external_id %}
+          <a href="{{ url_for('external_api.get_recipe', external_id=recipe.external_id) }}" class="btn w-100">See recipe</a>
+        {% else %}
+          <a href="#" class="btn w-100 disabled">No recipe</a>
+        {% endif %}
+
+        {# Conditional buttons: edit/delete for local, save para API #}
+        {% if recipe.id %}
+          <form method="get" action="{{ url_for('recipes.edit_recipe', recipe_id=recipe.id) }}">
+            <button type="submit" class="btn edit-recipe-btn" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </form>
+          <button type="submit" class="btn delete-recipe-btn" title="Delete" data-url="{{ url_for('recipes.delete_recipe', recipe_id=recipe.id) }}">
+            <i class="bi bi-trash"></i>
+          </button>
+        {% elif recipe.external_id %}
+          <form method="get" action="{{ url_for('external_api.save', external_id=recipe.external_id) }}">
+            <button type="submit" class="btn edit-recipe-btn" title="Save">
+              <i class="bi bi-save"></i>
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

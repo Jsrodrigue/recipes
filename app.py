@@ -19,11 +19,13 @@ from auth import auth
 from main import main
 from recipes import recipes
 from external_api import external_api
+from planner import planner
 # Register blueprints 
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(main, url_prefix='/')
 app.register_blueprint(recipes, url_prefix='/recipes')
 app.register_blueprint(external_api, url_prefix='/discover')
+app.register_blueprint(planner, url_prefix='/planner')
 
 # object to manage authentication
 login_manager.init_app(app)

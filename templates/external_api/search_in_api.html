@@ -1,0 +1,36 @@
+{% extends "base.html"%}
+{%block title%}
+Search
+{%endblock%}
+
+{%block content%}
+
+
+<h1>Search Results</h1>
+
+<!--Search form-->
+<div class="d-flex justify-content-center m-5">
+  <form action="{{url_for('external_api.search')}}" class="d-flex w-50">
+    <input
+      type="text"
+      name="q"
+      class="form-control search-bar"
+      placeholder="Find your new recipe"
+    />
+    <input
+      class="btn btn-primary ms-2"
+      type="submit"
+      value="Search"
+    />
+  </form>
+</div>
+
+<div class="container mt-5">
+  <div class="row">
+    {% for recipe in recipes %}
+      <!-- Recipe card -->
+      {% include "/recipes/partials/recipe_card.html" %}
+    {% endfor %}
+  </div>
+</div>
+{%endblock%}

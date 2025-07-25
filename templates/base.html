@@ -3,37 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <title>{% block title %}cozyna{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Select2 CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
       rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles.css') }}"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-      rel="stylesheet"
-    />
+
+    <!-- Bootstrap Icons -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
       rel="stylesheet"
     />
+
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Bootstrap JS Bundle (with Popper) used for the carrousel in discover-->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block head %}
+    <!-- Specific external scripts and styles -->
+    {% endblock %}
   </head>
   <body>
 
-    <!--Use copilot to make the page more responsive by adding hamburguer btn for smaller screens-->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container">
-        <a class="navbar-brand" href="{{url_for('main.index')}}">COZYna</a>
-        <!-- Hamburguer btn to moviles -->
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">COZYna</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -45,13 +52,11 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <!-- upper navbar-->
         <div class="collapse navbar-collapse" id="mainNavbar">
           <ul class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
-            
             <li class="nav-item">
-              <a class="nav-link" href="#">{{user.username}}</a>
+              <a class="nav-link" href="#">{{ user.username }}</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
@@ -61,9 +66,7 @@
               <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.register') }}"
-                >Register</a
-              >
+              <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a>
             </li>
             {% endif %}
           </ul>
@@ -71,31 +74,32 @@
       </div>
     </nav>
 
-    <!-- Flash messages with category sucess, danger o info-->
+    <!-- Flash messages -->
     <div id="flash-messages">
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <div class="container mt-3 text-center">
-      {% for category, message in messages %}
-      <div
-        class="alert alert-{{ category }} alert-dismissible fade show"
-        role="alert"
-      >
-        {{ message }}
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-          aria-label="Close"
-        ></button>
-      </div>
-      {% endfor %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="container mt-3 text-center">
+            {% for category, message in messages %}
+            <div
+              class="alert alert-{{ category }} alert-dismissible fade show"
+              role="alert"
+            >
+              {{ message }}
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+              ></button>
+            </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
     </div>
-    {% endif %} {% endwith %}
-    </div>
-    
+
     <div class="d-flex">
-      <!-- Sidebar when authenticated-->
+      <!-- Sidebar for authenticated users -->
       {% if user.is_authenticated %}
       <div>
         <nav
@@ -105,30 +109,16 @@
         >
           <div class="position-sticky">
             <div class="list-group list-group-flush mt-4">
-              <a
-                href="{{ url_for('recipes.index') }}"
-                class="list-group-item list-group-item-action py-2"
-              >
+              <a href="{{ url_for('recipes.index') }}" class="list-group-item list-group-item-action py-2">
                 <i class="bi bi-journal-text"></i> My Recipes
               </a>
-
-              <a
-                href="{{ url_for('recipes.new') }}"
-                class="list-group-item list-group-item-action py-2"
-              >
+              <a href="{{ url_for('recipes.new') }}" class="list-group-item list-group-item-action py-2">
                 <i class="bi bi-plus-circle"></i> New Recipe
               </a>
-              
-              <a
-                href="{{ url_for('external_api.discover') }}"
-                class="list-group-item list-group-item-action py-2"
-              >
+              <a href="{{ url_for('external_api.discover') }}" class="list-group-item list-group-item-action py-2">
                 <i class="bi bi-compass"></i> Discover
               </a>
-              <a
-                href="#"
-                class="list-group-item list-group-item-action py-2"
-              >
+              <a href="{{ url_for('planner.index') }}" class="list-group-item list-group-item-action py-2">
                 <i class="bi bi-calendar-week"></i> Meal Planner
               </a>
             </div>
@@ -152,11 +142,19 @@
       <!-- Main content -->
       <div class="container-fluid flex-grow-1">
         {% block content %}
-        <!-- Page-specific content goes here -->
+        <!-- Page-specific content -->
         {% endblock %}
       </div>
     </div>
+
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    {% block scripts %}
+    <!-- Page-specific scripts -->
+    {% endblock %}
   </body>
 </html>

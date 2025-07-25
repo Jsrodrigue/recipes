@@ -34,6 +34,13 @@
         </button>
       </form>
     </div>
+    {% elif recipe.external_id%}
+     <form method="get"
+              action="{{ url_for('external_api.save', external_id=recipe.external_id) }}">
+                <button type="submit" class="btn edit-recipe-btn" title="Save">
+                  <i class="bi bi-save"></i>
+                </button>
+              </form>
     {% endif %}
   </div>
 
@@ -73,7 +80,17 @@
   <div class="container d-flex justify-content-center mb-5">
     {{ recipe.instructions | safe }}
   </div>
+
+  <!-- Crdit to the api-->
+{% if recipe.source == 'api' %}
+  <footer class="text-center mt-4 mb-3 text-muted small">
+    This recipe was imported from <a href="https://www.themealdb.com/" target="_blank" rel="noopener noreferrer">TheMealDB</a>.
+  </footer>
+
+{% endif %}
+
 {% else %}
   <h1 class="text-center">Invalid Recipe</h1>
 {% endif %}
+
 {% endblock %}

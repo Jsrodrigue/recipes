@@ -11,10 +11,11 @@ from flask_login import current_user
 from forms.recipe_forms import NewRecipeForm
 
 # Function to save a recipe from the form
-def save_recipe(form, source):
+def save_recipe(form):
     if form.validate_on_submit():
         photo = form.photo.data
         filename = None
+        photo_url=form.photo_url.data
         if photo:
             # Add unique name to filename
             original_filename = secure_filename(photo.filename)
@@ -37,8 +38,10 @@ def save_recipe(form, source):
             instructions=form.instructions.data,
             ingredients=form.ingredients.data,  # Store as JSON string
             photo_filename=filename,
-            user=current_user
-            
+            user=current_user,
+            photo_url=photo_url,
+            source=form.source.data,
+            external_id=form.external_id.data
         )
 
         
@@ -118,7 +121,10 @@ def prefill_form_with_recipe(recipe, form):
     form.title.data = recipe.title
     form.description.data = recipe.description
     form.instructions.data = recipe.instructions
-    
+    form.source.data=recipe.source
+
+    if recipe.photo_url:
+        form.photo_url.data = recipe.photo_url
     #Need to map correctly ingredients and tags
     # Convert to python list if it's a JSON string
     if isinstance(recipe.ingredients, str):

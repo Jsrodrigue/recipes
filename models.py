@@ -1,9 +1,10 @@
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String, Text, DateTime, ForeignKey, Table, JSON, Boolean
+from sqlalchemy import Integer, String, Text, DateTime, ForeignKey, Table, JSON, Boolean, Date, Enum
 from extensions import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
+import enum
 
 ##################################################
 ##### User model #################################
@@ -18,7 +19,10 @@ class User(db.Model, UserMixin):
     password_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    # Relationships
+    # One user can have multiple recipes an multiple planners
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+    planner: Mapped[list["Planner"]] = relationship(back_populates="user")
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -28,7 +32,7 @@ class User(db.Model, UserMixin):
     
 
 ##################################################
-##### Association Table ##########################
+##### Association recipe-tag Table ###############
 ##################################################
 
 recipe_tags = Table(
@@ -58,10 +62,15 @@ class Recipe(db.Model):
     photo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
-    user: Mapped["User"] = relationship(back_populates="recipes")
 
     photo_filename: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
+    
+
+    #relationships
+    # Oner recipe can have only one user, but multiplre planners and tags
+    user: Mapped["User"] = relationship(back_populates="recipes")
+    planner: Mapped[list["Planner"]] = relationship(back_populates="recipe")
     tags: Mapped[list["Tag"]] = relationship(
         secondary=recipe_tags,
         back_populates="recipes"
@@ -81,8 +90,43 @@ class Tag(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
 
+    #Relationship, one tag can be in multiple recipes
     recipes: Mapped[list["Recipe"]] = relationship(
         secondary=recipe_tags,
         back_populates="tags"
     )
 
+###### Class used to restrict the options for the meal_type field in the planner model####
+class MealType(enum.Enum):
+    BREAKFAST = "breakfast"
+    LUNCH = "lunch"
+    DINNER = "dinner"
+    MORNING_SNACK = "morning_snack"
+    AFTERNOON_SNACK = "afternoon_snack"
+
+########### Planer table ########################
+class Planner(db.Model):
+    __tablename__ = 'planner'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey('recipes.id'), nullable=False)
+    planned_date: Mapped[date] = mapped_column(Date, nullable=False)
+    
+    meal_type: Mapped[MealType] = mapped_column(
+        Enum(MealType, name="meal_type"), 
+        nullable=False
+    )
+    
+    #Relashionships, one planner have only one recipe and user
+    user: Mapped["User"] = relationship(back_populates="planner")
+    recipe: Mapped["Recipe"] = relationship(back_populates="planner")
+
+    # Method to get a dictionary with recipe_id, recipe_title, meal_type and planned_Date
+    def to_dict(self):
+        return {
+            "recipe_id": self.recipe_id,
+            "recipe_title": self.recipe.title if self.recipe else None,
+            "meal_type": self.meal_type.value,
+            "planned_date": self.planned_date.isoformat()
+        }

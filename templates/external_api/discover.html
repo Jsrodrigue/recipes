@@ -1,21 +1,47 @@
-{% extends "base.html"%}
-
+{% extends "base.html"%} 
+{%block head%}
+<!-- Bootstrap JS Bundle (with Popper) used for the carrousel in discover-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
 {%block content%}
 <h1>Discover new recipes</h1>
 
+<!--Search form-->
+<div class="d-flex justify-content-center m-5">
+  <form action="{{url_for('external_api.search')}}" class="d-flex w-50">
+    <input
+      type="text"
+      name="q"
+      class="form-control search-bar"
+      placeholder="Find your new recipe"
+    />
+    <input
+      class="btn btn-primary ms-2"
+      type="submit"
+      value="Search"
+    />
+  </form>
+</div>
+
+
 <!--Boostrap Carrousel of random recipes-->
-<div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="1500">
-  
+<div
+  id="recipeCarousel"
+  class="carousel slide"
+  data-bs-ride="carousel"
+  data-bs-interval="1500"
+>
   <!-- Down Indicators -->
   <div class="carousel-indicators">
     {% for recipe in recipes %}
-      <button type="button"
-              data-bs-target="#recipeCarousel"
-              data-bs-slide-to="{{ loop.index0 }}"
-              class="down-indicator {% if loop.first %}active{% endif %}"
-              aria-current="{% if loop.first %}true{% endif %}"
-              aria-label="Slide {{ loop.index }}">
-      </button>
+    <button
+      type="button"
+      data-bs-target="#recipeCarousel"
+      data-bs-slide-to="{{ loop.index0 }}"
+      class="down-indicator {% if loop.first %}active{% endif %}"
+      aria-current="{% if loop.first %}true{% endif %}"
+      aria-label="Slide {{ loop.index }}"
+    ></button>
     {% endfor %}
   </div>
 
@@ -25,51 +51,43 @@
     <div class="carousel-item {% if loop.first %}active{% endif %}">
       <div class="d-flex justify-content-center py-4">
         <!-- Recipe Card -->
-        <div class="card shadow-sm rounded-4 border-0 recipe-card">
-          {% if recipe.photo_url %}
-          <img src="{{ recipe.photo_url }}" class="card-img-top rounded-top-4 food-image-card" alt="Recipe image" />
-          {% else %}
-          <img src="{{ url_for('static', filename='uploads/no_pic.png') }}" class="card-img-top rounded-top-4 food-image-card" alt="No image" />
-          {% endif %}
-
-          <div class="card-body">
-            <h5 class="card-title fw-bold">{{ recipe.title.title() }}</h5>
-            <p class="card-text">{{ recipe.description.capitalize() }}</p>
-
-            {% if recipe.tags %}
-            <div class="mb-2">
-              {% for tag in recipe.tags %}
-              <span class="badge bg-secondary me-1">{{ tag.name }}</span>
-              {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="d-flex justify-content-between">
-              <a href="{{ url_for('external_api.get_recipe', external_id=recipe.external_id) }}" class="btn w-100">See recipe</a>
-              <form method="get"
-              action="{{ url_for('external_api.save', external_id=recipe.external_id) }}">
-                <button type="submit" class="btn edit-recipe-btn" title="Save">
-                  <i class="bi bi-save"></i>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
+        {% include "/recipes/partials/recipe_card.html" %}
       </div>
     </div>
     {% endfor %}
   </div>
 
   <!-- Carrusel controls -->
-  <button class="carousel-control-prev" type="button" data-bs-target="#recipeCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon custom-carousel-icon" aria-hidden="true"></span>
+  <button
+    class="carousel-control-prev"
+    type="button"
+    data-bs-target="#recipeCarousel"
+    data-bs-slide="prev"
+  >
+    <span
+      class="carousel-control-prev-icon custom-carousel-icon"
+      aria-hidden="true"
+    ></span>
     <span class="visually-hidden">Previous</span>
   </button>
 
-  <button class="carousel-control-next" type="button" data-bs-target="#recipeCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon custom-carousel-icon" aria-hidden="true"></span>
+  <button
+    class="carousel-control-next"
+    type="button"
+    data-bs-target="#recipeCarousel"
+    data-bs-slide="next"
+  >
+    <span
+      class="carousel-control-next-icon custom-carousel-icon"
+      aria-hidden="true"
+    ></span>
     <span class="visually-hidden">Next</span>
   </button>
 </div>
-
-    {% endblock%}
+<footer class="text-center mt-5 mb-3 text-muted small">
+  This data is powered by
+  <a href="https://www.themealdb.com/" target="_blank" rel="noopener noreferrer"
+    >TheMealDB</a
+  >.
+</footer>
+{% endblock%}

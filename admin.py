@@ -23,6 +23,8 @@ class AdminModelView(ModelView):
 
 # Custom admin view for User
 class UserAdmin(AdminModelView):
+    can_create = False
+    can_edit = False
     form_overrides = {
         'is_admin': BooleanField,
     }
@@ -38,6 +40,9 @@ class UserAdmin(AdminModelView):
 
 # Custom admin view for Recipe with relationships
 class RecipeAdmin(AdminModelView):
+    
+    can_create = False
+    can_edit = False
     form_columns = [
         'title',
         'description',
@@ -69,6 +74,8 @@ class RecipeAdmin(AdminModelView):
 
 # Tag admin
 class TagAdmin(AdminModelView):
+    can_create = False
+    can_edit = False
     column_list = ['id', 'name']
     form_columns = ['name']
 

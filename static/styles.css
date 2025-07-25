@@ -74,3 +74,37 @@
 .food-image{
   width: 20rem;
 }
+
+/* Style for the search button*/
+
+.search-btn {
+  background-color: #f8f9fa;
+  border: 1px solid #f8f9fa;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+}
+
+.search-btn:hover {
+  border: 1px solid #62646767;
+}
+
+/* Style for search bar*/
+
+.search-bar {
+  border: 1px solid #969a9d;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+  padding: 0.6rem;
+  padding-left: 1.4rem;
+  width: 35rem;
+  border-radius: 15rem;
+}
+
+.search-bar:focus {
+  border: 1px solid #969a9d !important;
+  outline: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.search-bar:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
