@@ -1,0 +1,37 @@
+{% extends 'base.html'%}
+{% block title%}
+  New planned meal
+{% endblock%}
+
+{% block content %}
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        <label for="recipe_id" class="form-label">{{ form.recipe_id.label }}</label>
+        {{ form.recipe_id(class="form-select") }}
+        {% for error in form.recipe_id.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        <label for="planned_date" class="form-label">{{ form.planned_date.label }}</label>
+        {{ form.planned_date(class="form-control", type="date") }}
+        {% for error in form.planned_date.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        <label for="meal_type" class="form-label">{{ form.meal_type.label }}</label>
+        {{ form.meal_type(class="form-select") }}
+        {% for error in form.meal_type.errors %}
+            <div class="text-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+</form>
+
+{% endblock %}

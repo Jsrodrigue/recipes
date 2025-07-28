@@ -13,7 +13,3 @@ class PlannerForm(FlaskForm):
                             validators=[DataRequired()])
     submit = SubmitField('Add to Planner')
 
-    def __init__(self, all_tags, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Asign the tags to the form
-        self.tags.choices = [(tag.id, tag.name) for tag in all_tags]

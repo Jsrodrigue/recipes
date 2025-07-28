@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, flash, url_for, jsonify,
 import uuid
 from flask_login import login_required, current_user
 from forms.recipe_forms import NewRecipeForm
-from services.recipe_services import  save_recipe, update_recipe, prefill_form_with_recipe
+from services.recipe_services import  save_recipe, update_recipe, prefill_form_with_recipe, delete_recipe_by_id
 from models import Recipe, Tag
 from extensions import db
 import json
@@ -54,34 +54,23 @@ def get_recipe(recipe_id):
 @recipes.route('delete/<recipe_id>', methods=['POST'])
 @login_required
 def delete_recipe(recipe_id):
-    recipe = Recipe.query.get(recipe_id)
+    result, status_code = delete_recipe_by_id(recipe_id, current_user.id)
 
-    # Check if the user is the creator of the recipe
-    if recipe.user_id != current_user.id:
+    if status_code == 403:
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return jsonify({"error": "Unauthorized"}), 403
+            return jsonify(result), 403
         else:
             flash("Unauthorized user")
             return redirect(url_for("recipes.index"))
-   
-    # Delete the photo from the folder
-    if recipe.photo_filename:
-        path = os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo_filename)
-        try:
-            if os.path.exists(path):
-                os.remove(path)
-        except Exception as e:
-                current_app.logger.warning(f"Could not delete old photo: {e}")
-            
-    db.session.delete(recipe)
-    db.session.commit()
-    
-    # Check if the petition is by AJAX
+
+    if status_code == 404:
+        flash("Recipe not found")
+        return redirect(url_for("recipes.index"))
+
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return "", 204
-    
-    flash("Recipe deleted successfuly!", "success")
-    # Redirect to myrecipes if the petition is by the form
+
+    flash("Recipe deleted successfully!", "success")
     return redirect(url_for("recipes.index"))
 
 # Route edit a recipe by id

@@ -22,7 +22,7 @@ class User(db.Model, UserMixin):
     # Relationships
     # One user can have multiple recipes an multiple planners
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
-    planner: Mapped[list["Planner"]] = relationship(back_populates="user")
+    planner: Mapped[list["MealPlan"]] = relationship(back_populates="user")
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -70,7 +70,7 @@ class Recipe(db.Model):
     #relationships
     # Oner recipe can have only one user, but multiplre planners and tags
     user: Mapped["User"] = relationship(back_populates="recipes")
-    planner: Mapped[list["Planner"]] = relationship(back_populates="recipe")
+    planner: Mapped[list["MealPlan"]] = relationship(back_populates="recipe")
     tags: Mapped[list["Tag"]] = relationship(
         secondary=recipe_tags,
         back_populates="recipes"
@@ -105,7 +105,7 @@ class MealType(enum.Enum):
     AFTERNOON_SNACK = "afternoon_snack"
 
 ########### Planer table ########################
-class Planner(db.Model):
+class MealPlan(db.Model):
     __tablename__ = 'planner'
 
     id: Mapped[int] = mapped_column(primary_key=True)

@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import uuid #module used to generate unique name to a file
 import json
 from flask_login import current_user
-from forms.recipe_forms import NewRecipeForm
+
 
 # Function to save a recipe from the form
 def save_recipe(form):
@@ -143,3 +143,31 @@ def prefill_form_with_recipe(recipe, form):
     if isinstance(recipe.ingredients, str):
         recipe.ingredients = json.loads(recipe.ingredients)
 
+
+# Function to delete recipe
+def delete_recipe_by_id(recipe_id, user_id):
+    recipe = Recipe.query.get(recipe_id)
+
+    if not recipe:
+        return {"error": "Recipe not found"}, 404
+
+    if recipe.user_id != user_id:
+        return {"error": "Unauthorized"}, 403
+
+
+    for plan in recipe.planner:
+        db.session.delete(plan)
+
+    db.session.delete(recipe)
+    db.session.commit()
+    
+    # Delete photo if it exists
+    if recipe.photo_filename:
+        path = os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo_filename)
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+        except Exception as e:
+            current_app.logger.warning(f"Could not delete photo: {e}")
+
+    return {"success": True}, 204
