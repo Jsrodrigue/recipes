@@ -1,133 +1,159 @@
-{% extends 'base.html' %}
-{% block title %}Meal Planner{% endblock %}
-
-{% block head %}
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/main.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
-{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Meal Planner{% endblock %} {% block
+head %}
+<!-- FullCalendar CSS -->
+<link
+  href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/main.min.css"
+  rel="stylesheet"
+/>
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
+{% endblock %} {% block content %}
 <div class="container mt-4">
   <h2>My Meal Planner</h2>
-
   <div id="calendar"></div>
 </div>
 
-<!-- Modal, use modal boostrap class -->
-<div class="modal fade" id="mealModal" tabindex="-1" aria-labelledby="mealModalLabel" aria-hidden="true">
+<!-- Modal to show and manage meals for a selected date -->
+<div
+  class="modal fade"
+  id="mealModal"
+  tabindex="-1"
+  aria-labelledby="mealModalLabel"
+>
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="mealModalLabel">Recipes for <span id="modalDate"></span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="mealModalLabel">
+          Recipes for <span id="modalDate"></span>
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div class="modal-body">
-        <div id="mealsList">
-          <!-- Here we load the programed recipes -->
-        </div>
+        <div id="mealsList"></div>
         <hr />
         <button id="addMealBtn" class="btn btn-primary">Add recipe</button>
       </div>
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  var calendarEl = document.getElementById('calendar');
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
 
-  // Initialize FullCalendar with basic settings
-  var calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
+    // Initialize FullCalendar
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+      height: "auto",
+      events: "{{ url_for('planner.calendar_events') }}",
+      dateClick: function (info) {
+        console.log("Date clicked:", info.dateStr);
+        openMealModal(info.dateStr);
+      },
+    });
 
-    // Load events from Flask route
-    events: "{{ url_for('planner.calendar_events') }}",
+    calendar.render();
 
-    // On day click, open the modal for that day
-    dateClick: function(info) {
-      openMealModal(info.dateStr);
-    },
-  });
+    // Function to open modal and load meals for a selected date
+    async function openMealModal(dateStr) {
+      console.log("Opening modal for:", dateStr);
+      document.getElementById("modalDate").textContent = dateStr;
+      const mealsList = document.getElementById("mealsList");
+      mealsList.innerHTML = "Loading...";
 
-  calendar.render();
+      const mealModal = new bootstrap.Modal(
+        document.getElementById("mealModal")
+      );
+      mealModal.show();
 
-  // Function to open modal and load meals for the selected date
-  async function openMealModal(dateStr) {
-    document.getElementById('modalDate').textContent = dateStr;
+      try {
+        const mealsUrl =
+          "{{ url_for('planner.meals', date_str='__DATE__') }}".replace(
+            "__DATE__",
+            dateStr
+          );
+        console.log("Fetching meals from:", mealsUrl);
+        const response = await fetch(mealsUrl);
+        const data = await response.json();
+        console.log("Fetched meals:", data);
 
-    const mealsList = document.getElementById('mealsList');
-    mealsList.innerHTML = 'Loading...';
+        if (data.length === 0) {
+          mealsList.innerHTML = "<p>No recipes scheduled for this day.</p>";
+        } else {
+          mealsList.innerHTML = "";
 
-    // Show Bootstrap modal
-    const mealModal = new bootstrap.Modal(document.getElementById('mealModal'));
-    mealModal.show();
-
-    try {
-      // Use Jinja to build correct Flask URL for the selected date
-      const mealsUrlBase = "{{ url_for('planner.meals', date_str='__DATE__') }}".replace('__DATE__', dateStr);
-      
-      const response = await fetch(mealsUrlBase);
-      const data = await response.json();
-
-      // Show message if no meals are found
-      if (data.length === 0) {
-        mealsList.innerHTML = '<p>No recipes scheduled for this day.</p>';
-      } else {
-        mealsList.innerHTML = '';
-
-        // Render each meal with a delete button
-        data.forEach(meal => {
-          const div = document.createElement('div');
-          div.className = 'd-flex justify-content-between align-items-center mb-2';
-          div.innerHTML = `
+          data.forEach((meal) => {
+            console.log("Rendering meal:", meal);
+            const div = document.createElement("div");
+            div.className =
+              "d-flex justify-content-between align-items-center mb-2";
+            div.innerHTML = `
             <div>
               <strong>${meal.recipe_title}</strong> (${meal.meal_type})
             </div>
             <button class="btn btn-danger btn-sm btn-delete" data-id="${meal.id}">Delete</button>
           `;
-          mealsList.appendChild(div);
-        });
-
-        // Add click event to each delete button
-        document.querySelectorAll('.btn-delete').forEach(btn => {
-          btn.addEventListener('click', async function () {
-            const planlId = this.dataset.id;
-
-            if (confirm('Are you sure you want to delete this scheduled recipe?')) {
-              try {
-                const resp = await fetch(`/planner/delete/${planId}`, { method: 'DELETE' });
-
-                if (resp.ok) {
-                  // Remove the item from the modal
-                  this.parentElement.remove();
-                  // Refresh calendar events
-                  calendar.refetchEvents();
-                } else {
-                  alert('Error deleting the recipe.');
-                }
-              } catch {
-                alert('Error deleting the recipe.');
-              }
-            }
+            mealsList.appendChild(div);
           });
-        });
+
+          // Add listeners to delete buttons
+          document.querySelectorAll(".btn-delete").forEach((btn) => {
+            btn.addEventListener("click", async function () {
+              const planId = this.dataset.id;
+              const deleteUrl = `/planner/delete/${planId}`;
+
+              if (!planId || planId === "undefined") {
+                alert("Error: Plan ID is undefined.");
+                return;
+              }
+
+              if (
+                confirm(
+                  "Are you sure you want to delete this scheduled recipe?"
+                )
+              ) {
+                try {
+                  const resp = await fetch(deleteUrl, {
+                    method: "DELETE",
+                    headers: {
+                      "X-Requested-With": "XMLHttpRequest",
+                    },
+                  });
+                  console.log("Response from DELETE request:", resp);
+                  if (resp.ok) {
+                    this.parentElement.remove();
+                    calendar.refetchEvents(); // Refresh calendar
+                  } else {
+                    console.error("Deletion failed. Status:", resp.status);
+                    alert("Error deleting the recipe.");
+                  }
+                } catch (err) {
+                  console.error("Fetch error during deletion:", err);
+                  alert("Error deleting the recipe.");
+                }
+              }
+            });
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching meals:", err);
+        mealsList.innerHTML = "<p>Error loading recipes.</p>";
       }
-    } catch (err) {
-      mealsList.innerHTML = '<p>Error loading recipes.</p>';
-      console.error(err);
     }
-  }
 
-  // Redirect to the add meal page with the selected date prefilled
-  document.getElementById('addMealBtn').addEventListener('click', function () {
-    const date = document.getElementById('modalDate').textContent;
-    window.location.href = `/planner/add?date=${date}`;
+    // Redirect to add recipe page
+    document
+      .getElementById("addMealBtn")
+      .addEventListener("click", function () {
+        const date = document.getElementById("modalDate").textContent;
+        console.log("Redirecting to add page with date:", date);
+        window.location.href = `/planner/add?date=${date}`;
+      });
   });
-});
 </script>
-
-
 {% endblock %}

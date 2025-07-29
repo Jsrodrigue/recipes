@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, jsonify, redirect, flash, url_for
+from flask import Blueprint, render_template, jsonify, redirect, flash, url_for, request
 from flask_login import login_required, current_user
 import datetime
 from models import MealPlan, Recipe
 from forms.planner_forms import PlannerForm
-from services.planner_services import save_planned
+from services.planner_services import save_planned, delete_plan_by_id
 
 planner = Blueprint('planner', __name__)
 
@@ -59,3 +59,28 @@ def calendar_events():
         }
         for meal in events
     ])
+
+
+# Route to delete a meal plan by id
+@planner.route('/delete/<plan_id>', methods=['DELETE'])
+@login_required
+def delete(plan_id):
+    # Call function to delete plan and get result and status code
+    result, status_code = delete_plan_by_id(plan_id, current_user.id)
+
+    # Handle unauthorized access
+    if status_code == 403:
+        # If request is AJAX, return JSON response with 403 status
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify(result), 403
+
+    # Handle plan not found
+    if status_code == 404:
+        # If request is AJAX, return JSON response with 404 status
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify(result), 404
+
+    # For successful deletion via AJAX, return HTTP 204 No Content
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return '', 204
+  

@@ -28,3 +28,18 @@ def save_planned(form):
     flash("Unexpected error", 'danger')
     current_app.logger.exception("Unexpected error while saving recipe")
 
+
+# Function to delete plan
+def delete_plan_by_id(plan_id, user_id):
+    plan = MealPlan.query.get(plan_id)
+
+    if not plan:
+        return {"error": "Plan not found"}, 404
+
+    if plan.user_id != user_id:
+        return {"error": "Unauthorized"}, 403
+
+    db.session.delete(plan)
+    db.session.commit()
+   
+    return {"success": True}, 204

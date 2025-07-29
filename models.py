@@ -125,6 +125,7 @@ class MealPlan(db.Model):
     # Method to get a dictionary with recipe_id, recipe_title, meal_type and planned_Date
     def to_dict(self):
         return {
+            "id" : self.id,
             "recipe_id": self.recipe_id,
             "recipe_title": self.recipe.title if self.recipe else None,
             "meal_type": self.meal_type.value,
