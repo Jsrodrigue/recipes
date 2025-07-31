@@ -36,7 +36,7 @@ head %}
       <div class="modal-body">
         <div id="mealsList"></div>
         <hr />
-        <button id="addMealBtn" class="btn btn-primary">Add recipe</button>
+        <button id="addMealBtn" class="btn btn-primary">Add programed recipe</button>
       </div>
     </div>
   </div>
@@ -52,7 +52,6 @@ head %}
       height: "auto",
       events: "{{ url_for('planner.calendar_events') }}",
       dateClick: function (info) {
-        console.log("Date clicked:", info.dateStr);
         openMealModal(info.dateStr);
       },
     });
@@ -61,7 +60,6 @@ head %}
 
     // Function to open modal and load meals for a selected date
     async function openMealModal(dateStr) {
-      console.log("Opening modal for:", dateStr);
       document.getElementById("modalDate").textContent = dateStr;
       const mealsList = document.getElementById("mealsList");
       mealsList.innerHTML = "Loading...";
@@ -77,24 +75,23 @@ head %}
             "__DATE__",
             dateStr
           );
-        console.log("Fetching meals from:", mealsUrl);
         const response = await fetch(mealsUrl);
         const data = await response.json();
-        console.log("Fetched meals:", data);
-
+        
         if (data.length === 0) {
           mealsList.innerHTML = "<p>No recipes scheduled for this day.</p>";
         } else {
           mealsList.innerHTML = "";
 
+          // Inject meals for de day
           data.forEach((meal) => {
-            console.log("Rendering meal:", meal);
             const div = document.createElement("div");
             div.className =
               "d-flex justify-content-between align-items-center mb-2";
             div.innerHTML = `
             <div>
-              <strong>${meal.recipe_title}</strong> (${meal.meal_type})
+              <strong><a class="nav-link" href="/recipes/${meal.recipe_id}">${meal.recipe_title}</a></strong>
+               (${meal.meal_type})
             </div>
             <button class="btn btn-danger btn-sm btn-delete" data-id="${meal.id}">Delete</button>
           `;
@@ -146,12 +143,11 @@ head %}
       }
     }
 
-    // Redirect to add recipe page
+    // Redirect to add meal page
     document
       .getElementById("addMealBtn")
       .addEventListener("click", function () {
         const date = document.getElementById("modalDate").textContent;
-        console.log("Redirecting to add page with date:", date);
         window.location.href = `/planner/add?date=${date}`;
       });
   });

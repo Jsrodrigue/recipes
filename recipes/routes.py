@@ -100,3 +100,24 @@ def edit_recipe(recipe_id):
     return render_template("recipes/add_edit_recipe.html", form=form, user=current_user, recipe= recipe)
 
 
+@recipes.route('search')
+@login_required
+def search():
+    q = request.args.get('q')
+    recipes = []
+    for recipe in current_user.recipes:
+    
+        # search if query is in title
+        if q.lower() in recipe.title.lower():
+            recipes.append(recipe)
+            continue
+
+        # search in ingredients
+        print(recipe.title)
+        for ingredient in json.loads(recipe.ingredients):
+            if q.lower() in ingredient['name'].lower():
+                recipes.append(recipe)
+                break
+
+    return render_template("recipes/my_recipes_page.html", user=current_user, recipes=recipes)
+        

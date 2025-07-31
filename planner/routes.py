@@ -32,10 +32,32 @@ def meals(date_str):
   return jsonify(list)
 
 # Route to get and post the form to create new planned meal
-@planner.route("/new_planned_meal", methods=["GET", "POST"])
+@planner.route("/add", methods=["GET", "POST"])
 @login_required
 def new_plan():
+  date_str = request.args.get('date')
+  recipe_id_str = request.args.get('recipe_id')
   form = PlannerForm()
+
+   # Validate the date
+  valid_date = None
+  if date_str:
+    try:
+      valid_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+      flash("Invalid date format. Use YYYY-MM-DD.", "danger")
+      return redirect(url_for("planner.new_plan"))
+  if valid_date:
+        form.planned_date.data = valid_date
+    
+    # Validate recipe_id
+  if recipe_id_str and recipe_id_str.isdigit():
+    recipe_id = int(recipe_id_str)
+    if any(r.id == recipe_id for r in recipes):
+      form.recipe_id.data = recipe_id
+    else:
+      flash("Invalid recipe for this user.", "danger")
+      return redirect(url_for("planner.new_plan"))
 
   # Query recipes for the user and fill the form with ids and titles
   recipes = Recipe.query.filter_by(user_id=current_user.id).all()

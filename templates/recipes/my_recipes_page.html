@@ -1,5 +1,22 @@
 {% extends "base.html"%} {% block content %}
 <h1>My recipes</h1>
+<!--Search form-->
+<div class="d-flex justify-content-center m-5">
+  <form action="{{url_for('recipes.search')}}" class="d-flex w-50">
+    <input
+      type="text"
+      name="q"
+      class="form-control search-bar"
+      placeholder="Find in your recipes"
+    />
+    <input
+      class="btn btn-primary ms-2"
+      type="submit"
+      value="Search"
+    />
+  </form>
+</div>
+
 <div class="container mt-5">
   <div class="row">
     {% for recipe in recipes %}

@@ -52,7 +52,10 @@ class Recipe(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # ingredients is a dict wit keys 'name', 'quantity'
     ingredients: Mapped[dict] = mapped_column(JSON, nullable=False)
+    
     instructions: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now(timezone.utc))
 
